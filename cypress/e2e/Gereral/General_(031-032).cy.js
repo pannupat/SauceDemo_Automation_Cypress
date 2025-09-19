@@ -42,6 +42,10 @@ describe("GENERAL: Menu links + Reset App State (SD_TC_031 - SD_TC_032)", () => 
   cy.get("#inventory_sidebar_link").should("be.visible").click();
   cy.url().should("include", "/inventory.html");
   cy.get(".title").should("have.text", "Products");
+
+  cy.get("#inventory_sidebar_link").should("be.visible").click();
+  cy.url().should("include", "/inventory.html");
+  cy.get(".title").should("have.text", "Products");
 });
 
   it("SD_TC_032: Reset App State", () => {
