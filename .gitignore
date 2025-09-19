@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Cypress artifacts (เก็บเฉพาะ fail บน CI)
+cypress/screenshots/*
+!cypress/screenshots/*/* (keep nested if needed)
+cypress/videos/*
+!cypress/videos/*failed*.mp4
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
