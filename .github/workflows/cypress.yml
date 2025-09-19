@@ -1,0 +1,47 @@
+name: E2E (Cypress)
+
+on:
+  push:
+    branches: [ "**" ]        # รันทุก branch ที่ push
+  pull_request:
+    branches: [ "**" ]        # รันทุก PR
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          command: npm run cy:run
+        env:
+          CYPRESS_STRICT_SPEC: "true"            # ให้ fail ถ้าเจอ Known Gap
+          CYPRESS_EMAIL_PLUS_SHOULD_FAIL: "false"  # ถ้าชีตบังคับ TC30 ไม่ผ่าน → เปลี่ยนเป็น true
+
+      # เก็บ screenshots เมื่อ fail
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      # เก็บวิดีโอของทุกการรัน
+      - name: Upload videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: cypress/videos
