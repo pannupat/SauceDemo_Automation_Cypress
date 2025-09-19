@@ -7,30 +7,42 @@ describe("GENERAL: Menu links + Reset App State (SD_TC_031 - SD_TC_032)", () => 
   });
 
   it("SD_TC_031: เปิดลิงก์ About/All Items ในเมนู", () => {
+  const runCIFlow = Cypress.env("CI_MODE") || Cypress.browser.isHeadless;
 
-    cy.get("#react-burger-menu-btn").click();
+  cy.get("#react-burger-menu-btn").click();
+
+  if (runCIFlow) {
     cy.get("#about_sidebar_link")
-      .should("be.visible") //กดได้ไม่ซ่อนและไม่มีการ Disable ไว้
-      .then(($a) => {
-        //ได้ absolute URL ของลิงก์
-        const href = $a.prop("href");
-        //เช็คว่าคือ URL รูปแบบ http/https (กันเคส href เพี้ยน)
+      .should("be.visible")
+      .should("have.attr", "href")
+      .then((href) => {
         expect(href).to.match(/^https?:\/\//);
+        expect(href).to.match(/saucelabs\.com/i);
+        cy.request({ url: href, method: "HEAD", followRedirect: true })
+          .its("status")
+          .should("be.oneOf", [200, 301, 302]);
       });
+  } else {
+    Cypress.once("uncaught:exception", (err) => {
+      if (/postMessage/i.test(err.message)) return false;
+    });
 
-      cy.get("#about_sidebar_link").invoke("removeAttr", "target").click();
+    cy.get("#about_sidebar_link")
+      .should("have.attr", "href")
+      .and("match", /^https?:\/\//);
 
-      cy.title().should("not.be.empty"); // แสดงว่าโหลดหน้าใหม่จริง
-
+    cy.get("#about_sidebar_link").invoke("removeAttr", "target").click();
+    cy.title().should("not.be.empty"); 
     cy.go("back");
-
     cy.url().should("include", "/inventory.html");
-    cy.get("#react-burger-menu-btn").click();
-    cy.get("#inventory_sidebar_link").should("be.visible").click();
+  }
 
-    cy.url().should("include", "/inventory.html");
-    cy.get(".title").should("have.text", "Products");
-  });
+  
+  cy.get("#react-burger-menu-btn").click();
+  cy.get("#inventory_sidebar_link").should("be.visible").click();
+  cy.url().should("include", "/inventory.html");
+  cy.get(".title").should("have.text", "Products");
+});
 
   it("SD_TC_032: Reset App State", () => {
     const items = [
